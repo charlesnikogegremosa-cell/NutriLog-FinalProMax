@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NutriLog Pro | Premium Diet Tracker</title>
+    <style>
+        :root {
+            --primary: #4A90E2;
+            --primary-light: #EBF4FF;
+            --success: #2ECC71;
+            --alert: #E74C3C;
+            --warning: #F1C40F;
+            --bg: #F7FAFC;
+            --card-bg: #FFFFFF;
+            --text-main: #2D3748;
+            --text-muted: #A0AEC0;
+            --border: #E2E8F0;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .app-container {
+            background-color: var(--card-bg);
+            border-radius: 30px;
+            padding: 25px;
+            width: 100%;
+            max-width: 440px;
+            box-shadow: 0 20px 40px rgba(160, 174, 192, 0.15);
+            border: 1px solid var(--border);
+            box-sizing: border-box;
+            position: relative;
+            transition: all 0.5s ease;
+        }
+
+        /* --- Dynamic Glow Effects --- */
+        .glow-success {
+            box-shadow: 0 0 30px rgba(46, 204, 113, 0.4), inset 0 0 15px rgba(46, 204, 113, 0.1);
+            border: 2px solid var(--success);
+        }
+
+        .glow-alert {
+            box-shadow: 0 0 30px rgba(231, 76, 60, 0.4), inset 0 0 15px rgba(231, 76, 60, 0.1);
+            border: 2px solid var(--alert);
+        }
+
+        /* --- Login Module View --- */
+        .auth-view { display: flex; flex-direction: column; align-items: center; padding: 20px 10px; }
+        .avatar-container { width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), #9F7AEA); display: flex; align-items: center; justify-content: center; color: white; font-size: 32px; font-weight: bold; margin-bottom: 20px; box-shadow: 0 10px 20px rgba(74, 144, 226, 0.2); }
+
+        /* --- Multi-Timeframe Filter Tabs --- */
+        .timeframe-tabs { display: flex; background-color: #EDF2F7; border-radius: 12px; padding: 4px; margin-bottom: 20px; }
+        .time-tab { flex: 1; text-align: center; padding: 8px 0; font-size: 13px; font-weight: 600; color: var(--text-main); cursor: pointer; border-radius: 9px; transition: all 0.2s ease; }
+        .time-tab.active { background-color: var(--card-bg); color: var(--primary); box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05); }
+
+        /* --- Analytics Data Visualizers & Interactive Tooltips --- */
+        .analytics-container { background: #F8FAFC; border: 1px solid var(--border); border-radius: 20px; padding: 15px; margin-bottom: 20px; display: flex; flex-direction: column; align-items: center; }
+        .chart-wrapper { width: 100%; height: 130px; margin-top: 15px; display: flex; align-items: flex-end; justify-content: space-between; padding: 0 10px; box-sizing: border-box; }
+        .chart-bar-container { display: flex; flex-direction: column; align-items: center; flex: 1; height: 100%; justify-content: flex-end; cursor: pointer; }
+        
+        .chart-bar {
+            width: 18px;
+            background-color: var(--primary);
+            border-radius: 4px 4px 0 0;
+            transition: height 0.5s ease, background-color 0.3s ease;
+            position: relative;
+        }
+
+        .chart-bar.overlimit { background-color: var(--alert); }
+        .chart-bar:hover { filter: brightness(1.2); }
+
+        /* Hover Tooltip Logic */
+        .chart-bar::after {
+            content: attr(data-val) " Cal";
+            position: absolute;
+            top: -28px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #1A202C;
+            color: #FFF;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: bold;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+        }
+        .chart-bar:hover::after { opacity: 1; }
+
+        .chart-label { font-size: 10px; color: var(--text-muted); margin-top: 6px; font-weight: 600; }
+
+        /* --- Layout & Typography Standards --- */
+        h1 { font-size: 22px; font-weight: 700; text-align: center; margin: 0 0 5px 0; }
+        .subtitle { text-align: center; color: var(--text-muted); font-size: 13px; margin-bottom: 20px; }
+        .section-title { font-size: 13px; font-weight: 700; color: #4A5568; text-transform: uppercase; letter-spacing: 0.5px; margin: 20px 0 10px 0; }
+
+        input, button { box-sizing: border-box; width: 100%; padding: 12px 16px; margin: 6px 0; border-radius: 12px; font-family: inherit; font-size: 14px; border: 1px solid var(--border); }
+        input { background-color: #F8FAFC; color: var(--text-main); }
+        input:focus { outline: none; border-color: var(--primary); background-color: #FFF; }
+
+        button { font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        .btn-primary { background-color: var(--primary); color: white; border: none; }
+        .btn-primary:hover { background-color: #357ABD; }
+        .btn-secondary { background-color: #EDF2F7; color: #4A5568; border: none; margin-top: 15px;}
+        .btn-done { background-color: #2D3748; color: white; border: none; margin-top: 15px; }
+
+        /* --- Main Dashboard Ring Layout --- */
+        .circle-dashboard { display: flex; justify-content: center; align-items: center; margin: 20px 0; position: relative; }
+        .progress-ring { transform: rotate(-90deg); }
+        .progress-ring__circle { transition: stroke-dashoffset 0.35s; transform-origin: 50% 50%; stroke: var(--primary); }
+        .counter-labels { position: absolute; text-align: center; }
+        .counter-number { font-size: 28px; font-weight: 700; }
+        .counter-sub { font-size: 11px; color: var(--text-muted); }
+
+        /* --- Horizontal Macro Progress Bars --- */
+        .macro-bars-container { background: #F8FAFC; border: 1px solid var(--border); border-radius: 16px; padding: 15px; margin-bottom: 20px; }
+        .macro-row { margin-bottom: 12px; }
+        .macro-row:last-child { margin-bottom: 0; }
+        .macro-header { display: flex; justify-content: space-between; font-size: 12px; font-weight: 600; margin-bottom: 6px; }
+        .macro-track { background: #E2E8F0; height: 8px; border-radius: 4px; overflow: hidden; width: 100%; }
+        .macro-fill { height: 100%; border-radius: 4px; transition: width 0.5s ease-out; width: 0%; }
+
+        /* Optimized Grid for massive database viewing */
+        .food-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; max-height: 180px; overflow-y: auto; margin-bottom: 15px; padding: 4px; border: 1px solid var(--border); border-radius: 12px; }
+        .food-card { background: #F8FAFC; border: 1px solid var(--border); border-radius: 10px; padding: 8px; text-align: center; cursor: pointer; font-size: 11px; font-weight: 600; transition: 0.2s; }
+        .food-card:hover { border-color: var(--primary); background: var(--primary-light); }
+
+        .history-list { max-height: 120px; overflow-y: auto; margin-bottom: 15px; }
+        .history-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+
+        /* --- Manual Form Overlay --- */
+        .manual-box { background-color: #FFFDF5; border: 1px dashed var(--warning); padding: 16px; margin-top: 15px; display: none; border-radius: 16px; }
+        .grid-inputs { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+
+        .user-profile-header { display: flex; align-items: center; justify-content: space-between; background: var(--primary-light); padding: 10px 15px; border-radius: 14px; margin-bottom: 20px; font-size: 13px; font-weight: 600; }
+        .logout-link { color: var(--alert); cursor: pointer; font-size: 12px; text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+    <div class="app-container" id="appNode">
+        <h1>NutriLog Pro</h1>
+        <p class="subtitle">Effective Weight Change & Diet Planner</p>
+
+        <div id="authView" class="auth-view">
+            <div class="avatar-container">🔑</div>
+            <p class="prompt" style="font-weight:600; margin-bottom:15px; text-align:center;">Sign In with Google to Sync Your History</p>
+            <button class="btn-primary" onclick="window.handleLogin()" style="background-color: #EA4335;">Sign In with Google</button>
+        </div>
+
+        <div id="dashboardView" style="display:none;">
+            <div class="user-profile-header">
+                <div>👤 Account: <span id="profileName" style="color:var(--primary);">User</span></div>
+                <div class="logout-link" onclick="window.handleLogout()">Logout</div>
+            </div>
+
+            <div id="setupBlock">
+                <p class="section-title">Step 1: Configure Caloric Limits</p>
+                <input type="number" id="goalInput" placeholder="Target daily calories (e.g., 2000)" onkeydown="if(event.key==='Enter') window.initCoreTracker()">
+                <button class="btn-primary" onclick="window.initCoreTracker()">Initialize Planner</button>
+            </div>
+
+            <div id="trackerBlock" style="display:none;">
+                
+                <div class="timeframe-tabs">
+                    <div class="time-tab active" id="tab-weekly" onclick="window.setTimeframe('weekly')">Weekly</div>
+                    <div class="time-tab" id="tab-monthly" onclick="window.setTimeframe('monthly')">Monthly</div>
+                    <div class="time-tab" id="tab-yearly" onclick="window.setTimeframe('yearly')">Yearly</div>
+                </div>
+
+                <div class="analytics-container">
+                    <div style="width:100%; display:flex; justify-content:space-between; font-size:12px; font-weight:600;">
+                        <span id="chartRangeTitle">Calorie Intake Trends</span>
+                        <span id="avgLabel" style="color:var(--text-muted)">Hover Bars</span>
+                    </div>
+                    <div id="chartContainer" class="chart-wrapper"></div>
+                </div>
+
+                <div class="circle-dashboard">
+                    <svg class="progress-ring" width="140" height="140">
+                        <circle stroke="#E2E8F0" stroke-width="10" fill="transparent" r="60" cx="70" cy="70"/>
+                        <circle id="progressCircle" class="progress-ring__circle" stroke-width="10" fill="transparent" r="60" cx="70" cy="70" stroke-dasharray="376.99" stroke-dashoffset="376.99"/>
+                    </svg>
+                    <div class="counter-labels">
+                        <div id="dashTotal" class="counter-number">0</div>
+                        <div id="dashGoalLabel" class="counter-sub">of 2000 Cal</div>
+                    </div>
+                </div>
+
+                <div class="macro-bars-container">
+                    <div class="macro-row">
+                        <div class="macro-header"><span style="color:var(--text-muted)">Protein</span><span id="labelP" style="color:var(--primary)">0g</span></div>
+                        <div class="macro-track"><div id="barP" class="macro-fill" style="background-color: var(--primary);"></div></div>
+                    </div>
+                    <div class="macro-row">
+                        <div class="macro-header"><span style="color:var(--text-muted)">Carbs</span><span id="labelC" style="color:var(--warning)">0g</span></div>
+                        <div class="macro-track"><div id="barC" class="macro-fill" style="background-color: var(--warning);"></div></div>
+                    </div>
+                    <div class="macro-row">
+                        <div class="macro-header"><span style="color:var(--text-muted)">Fats</span><span id="labelF" style="color:var(--success)">0g</span></div>
+                        <div class="macro-track"><div id="barF" class="macro-fill" style="background-color: var(--success);"></div></div>
+                    </div>
+                </div>
+
+                <p class="section-title">Log Today's Meal</p>
+                <input type="text" id="foodInput" placeholder="Search database or type item..." onkeydown="if(event.key==='Enter') window.processInput()">
+                <button class="btn-primary" onclick="window.processInput()">+ Push Log Node</button>
+
+                <div id="manualEntry" class="manual-box">
+                    <p style="color:var(--text-main); font-weight: 700; font-size: 13px; margin: 0 0 10px 0;">[!] Item Unrecognized. Initialize Manual Matrix:</p>
+                    <div class="grid-inputs">
+                        <input type="number" id="manCal" placeholder="Calories">
+                        <input type="number" id="manP" placeholder="Protein (g)">
+                        <input type="number" id="manC" placeholder="Carbs (g)">
+                        <input type="number" id="manF" placeholder="Fats (g)">
+                    </div>
+                    <button onclick="window.submitManual()" style="background-color: var(--warning); color: #212529; font-weight: bold; border: none; margin-top: 10px;">Save Custom Values</button>
+                </div>
+
+                <p class="section-title">Expanded Selection Matrix (Scrollable)</p>
+                <div id="foodGrid" class="food-grid"></div>
+
+                <p class="section-title">Current Session Record Logs</p>
+                <div id="historyList" class="history-list"></div>
+                
+                <button class="btn-done" onclick="window.finishSession()">Complete & Compile to Cloud</button>
+            </div>
+
+            <div id="finalView" style="display:none; text-align: center; padding: 20px 0;">
+                <h2 id="finalMessage" style="margin-bottom: 5px;">Analysis Complete</h2>
+                <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 20px;">Your transaction pipeline safely written to Google Firestore.</p>
+                <button class="btn-primary" onclick="location.reload()">Start New Session</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCx--PjqXDcfvL-vOj-rPuL9FiwB7Mrqxs",
+            authDomain: "nutrilog-promaxs.firebaseapp.com",
+            projectId: "nutrilog-promaxs",
+            storageBucket: "nutrilog-promaxs.firebasestorage.app",
+            messagingSenderId: "811672056523",
+            appId: "1:811672056523:web:ab2ddd4814650805b0a14e",
+            measurementId: "G-JWCY0PZW4F"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const dbCloud = getFirestore(app);
+        const googleProvider = new GoogleAuthProvider();
+
+        // COMPREHENSIVE 100-ITEM FACT-BASED FOOD REGISTRY DATASET
+        const db = {
+            // --- TAIWAN STAPLES & CONVENIENCE (1-20) ---
+            "onigiri": { name: "Onigiri (7-11)", cal: 180, p: 4.0, c: 38.0, f: 1.5 },
+            "tea egg": { name: "Tea Egg", cal: 75, p: 7.0, c: 1.0, f: 5.0 },
+            "milk tea": { name: "Pearl Milk Tea (Boba)", cal: 450, p: 3.0, c: 68.0, f: 16.0 },
+            "beef noodles": { name: "Beef Noodles", cal: 650, p: 35.0, c: 75.0, f: 25.0 },
+            "lu rou fan": { name: "Braised Pork Rice", cal: 480, p: 16.0, c: 58.0, f: 21.0 },
+            "dumplings": { name: "Pork Dumplings (10pc)", cal: 520, p: 20.0, c: 55.0, f: 24.0 },
+            "fried rice": { name: "Egg Fried Rice", cal: 610, p: 14.0, c: 84.0, f: 19.0 },
+            "bento": { name: "Pork Chop Bento", cal: 820, p: 38.0, c: 95.0, f: 32.0 },
+            "scallion pancake": { name: "Scallion Pancake", cal: 350, p: 7.0, c: 42.0, f: 17.0 },
+            "hot pot": { name: "Mini Shabu Hotpot", cal: 720, p: 42.0, c: 45.0, f: 38.0 },
+            "dan bing": { name: "Egg Crepe Roll", cal: 260, p: 11.0, c: 24.0, f: 13.0 },
+            "turnip cake": { name: "Radish Cake (2pcs)", cal: 230, p: 5.0, c: 36.0, f: 7.0 },
+            "soy milk": { name: "Sweet Soy Milk (Cup)", cal: 140, p: 6.0, c: 15.0, f: 4.5 },
+            "shaved ice": { name: "Mango Shaved Ice", cal: 510, p: 4.0, c: 110.0, f: 5.0 },
+            "pineapple cake": { name: "Pineapple Cake (1pc)", cal: 150, p: 1.5, c: 22.0, f: 6.0 },
+            "gua bao": { name: "Pork Belly Gua Bao", cal: 420, p: 18.0, c: 46.0, f: 19.0 },
+            "oyster omelet": { name: "Oyster Omelet", cal: 380, p: 14.0, c: 34.0, f: 21.0 },
+            "stinky tofu": { name: "Fried Stinky Tofu", cal: 490, p: 18.0, c: 40.0, f: 28.0 },
+            "chicken cutlet": { name: "XL Fried Chicken Cutlet", cal: 780, p: 45.0, c: 52.0, f: 43.0 },
+            "papaya milk": { name: "Papaya Milk Smoothie", cal: 260, p: 8.0, c: 38.0, f: 7.0 },
+
+            // --- ATHLETIC & FITNESS HIGH PROTEIN (21-40) ---
+            "chicken breast": { name: "Grilled Chicken Breast", cal: 165, p: 31.0, c: 0.0, f: 3.6 },
+            "salmon": { name: "Baked Salmon Fillet", cal: 206, p: 22.0, c: 0.0, f: 12.0 },
+            "whey protein": { name: "Whey Scoop (Water)", cal: 120, p: 24.0, c: 2.0, f: 1.5 },
+            "protein bar": { name: "Standard Protein Bar", cal: 210, p: 20.0, c: 18.0, f: 7.0 },
+            "egg whites": { name: "Liquid Egg Whites (100g)", cal: 52, p: 11.0, c: 0.7, f: 0.2 },
+            "canned tuna": { name: "Tuna in Water (Can)", cal: 130, p: 28.0, c: 0.0, f: 1.0 },
+            "greek yogurt": { name: "Plain Greek Yogurt", cal: 130, p: 15.0, c: 6.0, f: 4.0 },
+            "beef sirloin": { name: "Lean Sirloin (150g)", cal: 290, p: 44.0, c: 0.0, f: 11.0 },
+            "turkey breast": { name: "Sliced Turkey Breast", cal: 110, p: 22.0, c: 1.0, f: 2.0 },
+            "cottage cheese": { name: "Low-Fat Cottage Cheese", cal: 90, p: 12.0, c: 3.0, f: 2.5 },
+            "tofu puff": { name: "Firm Tofu Block", cal: 144, p: 16.0, c: 4.0, f: 8.0 },
+            "boiled egg": { name: "Whole Hardboiled Egg", cal: 78, p: 6.5, c: 0.6, f: 5.3 },
+            "shrimp": { name: "Steamed Shrimp (100g)", cal: 99, p: 24.0, c: 0.2, f: 0.3 },
+            "tilapia": { name: "White Tilapia Fillet", cal: 128, p: 26.0, c: 0.0, f: 2.5 },
+            "edamame": { name: "Shelled Edamame (Cup)", cal: 130, p: 12.0, c: 10.0, f: 5.0 },
+            "beef jerky": { name: "Beef Jerky Strips", cal: 116, p: 11.0, c: 6.0, f: 2.5 },
+            "isolate protein": { name: "Whey Isolate Shake", cal: 110, p: 27.0, c: 0.5, f: 0.0 },
+            "creatine": { name: "Creatine Monohydrate", cal: 0, p: 0.0, c: 0.0, f: 0.0 },
+            "peanut powder": { name: "Dehydrated PB2 (2tbsp)", cal: 60, p: 6.0, c: 5.0, f: 1.5 },
+            "chicken thighs": { name: "Boneless Chicken Thigh", cal: 210, p: 26.0, c: 0.0, f: 11.0 },
+
+            // --- FAST FOOD & CHEAT MEALS (41-60) ---
+            "burger": { name: "Classic Beef Burger", cal: 550, p: 25.0, c: 45.0, f: 28.0 },
+            "pizza": { name: "Pepperoni Pizza Slice", cal: 290, p: 12.0, c: 32.0, f: 12.0 },
+            "fries": { name: "French Fries (Medium)", cal: 365, p: 4.0, c: 48.0, f: 17.0 },
+            "fried chicken": { name: "Crispy Fried Drumstick", cal: 260, p: 16.0, c: 12.0, f: 16.0 },
+            "chicken nuggets": { name: "Chicken Nuggets (6pc)", cal: 280, p: 13.0, c: 18.0, f: 17.0 },
+            "hot dog": { name: "Movie Theater Hotdog", cal: 310, p: 11.0, c: 24.0, f: 19.0 },
+            "subway": { name: "6-inch Turkey Sub", cal: 280, p: 18.0, c: 40.0, f: 4.0 },
+            "taco": { name: "Crunchy Beef Taco", cal: 170, p: 9.0, c: 13.0, f: 10.0 },
+            "nachos": { name: "Cheese Loaded Nachos", cal: 460, p: 9.0, c: 44.0, f: 28.0 },
+            "ramen": { name: "Tonkotsu Instant Ramen", cal: 420, p: 9.0, c: 62.0, f: 14.0 },
+            "popcorn": { name: "Butter Popcorn (Bag)", cal: 410, p: 6.0, c: 46.0, f: 23.0 },
+            "potato chips": { name: "Lay's Potato Chips", cal: 152, p: 2.0, c: 15.0, f: 10.0 },
+            "chocolate": { name: "Milk Chocolate Bar", cal: 220, p: 3.0, c: 26.0, f: 12.0 },
+            "ice cream": { name: "Vanilla Ice cream (Scoop)", cal: 145, p: 2.5, c: 16.0, f: 8.0 },
+            "donut": { name: "Glazed Cake Donut", cal: 270, p: 3.0, c: 32.0, f: 15.0 },
+            "waffles": { name: "Belgian Waffles (Plain)", cal: 290, p: 6.0, c: 43.0, f: 10.0 },
+            "croissant": { name: "Butter Bakery Croissant", cal: 272, p: 5.5, c: 28.0, f: 15.0 },
+            "pancakes": { name: "Maple Syrup Pancakes", cal: 310, p: 6.0, c: 58.0, f: 6.0 },
+            "coke": { name: "Regular Cola (Can)", cal: 140, p: 0.0, c: 39.0, f: 0.0 },
+            "coke zero": { name: "Coke Zero / Diet", cal: 0, p: 0.0, c: 0.0, f: 0.0 },
+
+            // --- CARBS & PANTRY GRAINS (61-80) ---
+            "white rice": { name: "White Rice (Cooked Cup)", cal: 205, p: 4.2, c: 45.0, f: 0.4 },
+            "brown rice": { name: "Brown Rice (Cooked Cup)", cal: 218, p: 4.5, c: 46.0, f: 1.6 },
+            "oatmeal": { name: "Rolled Oatmeal (Cup)", cal: 150, p: 5.0, c: 27.0, f: 3.0 },
+            "pasta": { name: "Boiled Spaghetti Noodles", cal: 220, p: 8.0, c: 43.0, f: 1.3 },
+            "sweet potato": { name: "Steamed Sweet Potato", cal: 115, p: 2.0, c: 27.0, f: 0.2 },
+            "white bread": { name: "White Bread (Slice)", cal: 75, p: 2.5, c: 15.0, f: 1.0 },
+            "wheat bread": { name: "Whole Wheat Bread (Slice)", cal: 85, p: 4.0, c: 14.0, f: 1.2 },
+            "quinoa": { name: "Cooked Quinoa Matrix", cal: 222, p: 8.0, c: 39.0, f: 3.6 },
+            "bagel": { name: "Plain Bakery Bagel", cal: 260, p: 10.0, c: 52.0, f: 1.5 },
+            "cereal": { name: "Corn Flakes with Milk", cal: 210, p: 7.0, c: 38.0, f: 4.0 },
+            "russet potato": { name: "Baked Potato (Medium)", cal: 160, p: 4.0, c: 37.0, f: 0.2 },
+            "tortilla": { name: "Flour Tortilla Wrap", cal: 140, p: 4.0, c: 24.0, f: 3.0 },
+            "rice cakes": { name: "Plain Rice Cakes (2pcs)", cal: 70, p: 1.5, c: 15.0, f: 0.5 },
+            "udon": { name: "Fresh Udon Noodles", cal: 280, p: 7.0, c: 60.0, f: 1.0 },
+            "honey": { name: "Natural Honey (1tbsp)", cal: 64, p: 0.0, c: 17.0, f: 0.0 },
+            "peanut butter": { name: "Creamy Peanut Butter", cal: 190, p: 7.0, c: 7.0, f: 16.0 },
+            "almond milk": { name: "Unsweetened Almond Milk", cal: 30, p: 1.0, c: 1.0, f: 2.5 },
+            "whole milk": { name: "Full Cream Whole Milk", cal: 150, p: 8.0, c: 12.0, f: 8.0 },
+            "olive oil": { name: "Pure Olive Oil (1tbsp)", cal: 120, p: 0.0, c: 0.0, f: 14.0 },
+            "butter": { name: "Salted Butter (1tbsp)", cal: 100, p: 0.1, c: 0.0, f: 11.0 },
+
+            // --- FRUITS & VEGETABLES (81-100) ---
+            "apple": { name: "Red Apple", cal: 95, p: 0.5, c: 25.0, f: 0.3 },
+            "banana": { name: "Ripe Banana", cal: 105, p: 1.3, c: 27.0, f: 0.4 },
+            "avocado": { name: "Fresh Avocado (Half)", cal: 160, p: 2.0, c: 8.5, f: 15.0 },
+            "broccoli": { name: "Steamed Broccoli Florets", cal: 35, p: 2.5, c: 7.0, f: 0.4 },
+            "spinach": { name: "Raw Baby Spinach Leaves", cal: 7, p: 1.0, c: 1.0, f: 0.1 },
+            "blueberries": { name: "Fresh Blueberries (Cup)", cal: 85, p: 1.0, c: 21.0, f: 0.5 },
+            "orange": { name: "Navel Orange", cal: 65, p: 1.3, c: 15.0, f: 0.3 },
+            "strawberries": { name: "Whole Strawberries (Cup)", cal: 50, p: 1.0, c: 11.0, f: 0.4 },
+            "watermelon": { name: "Diced Watermelon (Cup)", cal: 46, p: 0.9, c: 11.5, f: 0.2 },
+            "pineapple": { name: "Fresh Pineapple Chunks", cal: 80, p: 1.0, c: 22.0, f: 0.2 },
+            "mango": { name: "Sliced Sanyuan Mango", cal: 200, p: 2.7, c: 50.0, f: 0.6 },
+            "grapes": { name: "Red Seedless Grapes", cal: 104, p: 1.1, c: 27.0, f: 0.2 },
+            "chicken salad": { name: "Balsamic Chicken Salad", cal: 320, p: 28.0, c: 12.0, f: 18.0 },
+            "cucumber": { name: "Sliced Fresh Cucumber", cal: 16, p: 0.7, c: 3.8, f: 0.1 },
+            "tomatoes": { name: "Cherry Tomatoes (Cup)", cal: 27, p: 1.3, c: 6.0, f: 0.3 },
+            "asparagus": { name: "Grilled Asparagus Spears", cal: 40, p: 4.0, c: 7.0, f: 1.2 },
+            "mushrooms": { name: "Sautéed White Mushrooms", cal: 35, p: 3.0, c: 5.0, f: 0.5 },
+            "almonds": { name: "Raw Almonds (Loose Handful)", cal: 164, p: 6.0, c: 6.0, f: 14.0 },
+            "walnuts": { name: "Shelled Walnuts (1oz)", cal: 185, p: 4.3, c: 3.9, f: 18.5 },
+            "chia seeds": { name: "Organic Chia Seeds (1tbsp)", cal: 60, p: 2.0, c: 5.0, f: 3.0 }
+        };
+
+        const historicalData = {
+            weekly: { title: "Calorie Intake (Last 7 Days)", bars: [ {l:"Mon", v:1800}, {l:"Tue", v:2100}, {l:"Wed", v:1950}, {l:"Thu", v:1850}, {l:"Fri", v:2200}, {l:"Sat", v:1700}, {l:"Today", v:0} ] },
+            monthly: { title: "Monthly Tracking (Last 4 Weeks)", bars: [ {l:"W1", v:13500}, {l:"W2", v:14200}, {l:"W3", v:12800}, {l:"This Wk", v:0} ] },
+            yearly: { title: "Yearly Overview (2026 Metrics)", bars: [ {l:"Q1", v:160000}, {l:"Q2", v:172000}, {l:"Q3", v:185000}, {l:"This Qtr", v:0} ] }
+        };
+
+        window.dailyGoal = 2000;
+        window.totalCals = 0;
+        window.macros = { p: 0, c: 0, f: 0 };
+        const ringCircumference = 376.99;
+        let activeTimeframe = 'weekly';
+        let customFoodNameCache = "";
+
+        // CORE SIGN IN INTERACTIVE FUNCTION OVERRIDES
+        window.handleLogin = function() {
+            signInWithPopup(auth, googleProvider)
+                .then((result) => {
+                    const user = result.user;
+                    document.getElementById('authView').style.display = 'none';
+                    document.getElementById('dashboardView').style.display = 'block';
+                    document.getElementById('profileName').innerText = user.displayName;
+                    window.buildQuickSelector();
+                })
+                .catch((err) => {
+                    alert("Authentication routine failure: " + err.message);
+                });
+        };
+
+        window.handleLogout = function() {
+            signOut(auth).then(() => { location.reload(); });
+        };
+
+        window.setTimeframe = function(type) {
+            activeTimeframe = type;
+            document.querySelectorAll('.time-tab').forEach(t => t.classList.remove('active'));
+            document.getElementById(`tab-${type}`).classList.add('active');
+
+            const dataset = historicalData[type];
+            document.getElementById('chartRangeTitle').innerText = dataset.title;
+
+            const chartBox = document.getElementById('chartContainer');
+            chartBox.innerHTML = "";
+            const values = dataset.bars.map(b => b.v);
+            
+            let maxVal = Math.max(...values);
+            if(type === 'weekly') maxVal = Math.max(maxVal, window.dailyGoal + 500); 
+
+            dataset.bars.forEach(bar => {
+                const percentageHeight = maxVal === 0 ? 0 : (bar.v / maxVal) * 100;
+                let limitThreshold = type === 'weekly' ? window.dailyGoal : 9999999; 
+                const isOverLimit = bar.v > limitThreshold ? "overlimit" : "";
+                
+                chartBox.innerHTML += `
+                    <div class="chart-bar-container">
+                        <div class="chart-bar ${isOverLimit}" style="height: ${percentageHeight}%;" data-val="${bar.v}"></div>
+                        <div class="chart-label">${bar.l}</div>
+                    </div>
+                `;
+            });
+        };
+
+        window.initCoreTracker = function() {
+            let inputGoal = parseInt(document.getElementById('goalInput').value);
+            if(inputGoal > 0) {
+                window.dailyGoal = inputGoal;
+                document.getElementById('setupBlock').style.display = 'none';
+                document.getElementById('trackerBlock').style.display = 'block';
+                document.getElementById('dashGoalLabel').innerText = `of ${window.dailyGoal} Cal`;
+                
+                historicalData.weekly.bars[6].v = window.totalCals;
+                historicalData.monthly.bars[3].v = 10000 + window.totalCals; 
+                historicalData.yearly.bars[3].v = 150000 + window.totalCals; 
+                
+                window.setTimeframe('weekly');
+                window.updateDashboardUI();
+            }
+        };
+
+        window.buildQuickSelector = function() {
+            const grid = document.getElementById('foodGrid');
+            grid.innerHTML = "";
+            Object.keys(db).forEach(key => {
+                grid.innerHTML += `
+                    <div class="food-card" onclick="window.addMealNode('${key}')">
+                        <div>${db[key].name}</div>
+                        <div style="color:var(--text-muted); font-size:10px;">${db[key].cal} Cal</div>
+                    </div>
+                `;
+            });
+        };
+
+        window.addMealNode = function(key) {
+            let food = db[key];
+            if(food) window.processDietAddition(food.name, food.cal, food.p, food.c, food.f);
+        };
+
+        window.processInput = function() {
+            let input = document.getElementById('foodInput').value.toLowerCase().trim();
+            if(input === "") return;
+            
+            if(db[input]) {
+                window.addMealNode(input);
+            } else {
+                customFoodNameCache = input;
+                document.getElementById('manualEntry').style.display = 'block';
+            }
+            document.getElementById('foodInput').value = "";
+        };
+
+        window.submitManual = function() {
+            let cal = parseInt(document.getElementById('manCal').value) || 0;
+            let p = parseFloat(document.getElementById('manP').value) || 0;
+            let c = parseFloat(document.getElementById('manC').value) || 0;
+            let f = parseFloat(document.getElementById('manF').value) || 0;
+
+            window.processDietAddition(customFoodNameCache, cal, p, c, f);
+            
+            document.getElementById('manualEntry').style.display = 'none';
+            document.getElementById('manCal').value = "";
+            document.getElementById('manP').value = "";
+            document.getElementById('manC').value = "";
+            document.getElementById('manF').value = "";
+        };
+
+        window.processDietAddition = function(name, cal, p, c, f) {
+            window.totalCals += cal;
+            window.macros.p += p; window.macros.c += c; window.macros.f += f;
+
+            historicalData.weekly.bars[6].v += cal;
+            historicalData.monthly.bars[3].v += cal;
+            historicalData.yearly.bars[3].v += cal;
+            
+            window.setTimeframe(activeTimeframe);
+
+            const list = document.getElementById('historyList');
+            list.innerHTML = `
+                <div class="history-item">
+                    <div><strong>${name}</strong> <span style="font-size:11px; color:var(--text-muted);">(${cal} Cal)</span></div>
+                    <div style="font-weight:600; color:var(--primary);">+${cal}</div>
+                </div>
+            ` + list.innerHTML;
+
+            window.updateDashboardUI();
+        };
+
+        window.updateDashboardUI = function() {
+            document.getElementById('dashTotal').innerText = window.totalCals;
+            document.getElementById('labelP').innerText = window.macros.p.toFixed(0) + 'g';
+            document.getElementById('labelC').innerText = window.macros.c.toFixed(0) + 'g';
+            document.getElementById('labelF').innerText = window.macros.f.toFixed(0) + 'g';
+
+            let percentP = Math.min((window.macros.p / 120) * 100, 100); // Scaled target ceilings for visualization mapping
+            let percentC = Math.min((window.macros.c / 250) * 100, 100);
+            let percentF = Math.min((window.macros.f / 80) * 100, 100);
+
+            document.getElementById('barP').style.width = percentP + '%';
+            document.getElementById('barC').style.width = percentC + '%';
+            document.getElementById('barF').style.width = percentF + '%';
+
+            const circle = document.getElementById('progressCircle');
+            const calculationPercent = Math.min(window.totalCals / window.dailyGoal, 1);
+            circle.style.strokeDashoffset = ringCircumference - (calculationPercent * ringCircumference);
+            circle.style.stroke = window.totalCals > window.dailyGoal ? "var(--alert)" : "var(--primary)";
+        };
+
+        window.finishSession = async function() {
+            const currentUser = auth.currentUser;
+            
+            if (currentUser) {
+                const dateKey = new Date().toISOString().split('T')[0];
+                try {
+                    await setDoc(doc(dbCloud, "users", currentUser.uid, "historyLogs", dateKey), {
+                        calories: window.totalCals,
+                        protein: window.macros.p,
+                        carbs: window.macros.c,
+                        fats: window.macros.f,
+                        timestamp: new Date()
+                    });
+                    console.log("Cloud Write Successfully Triggered.");
+                } catch (err) {
+                    console.error("Cloud synchronization drop logs context: ", err);
+                    alert("Cloud persistence synchronization interupted.");
+                }
+            }
+
+            document.getElementById('trackerBlock').style.display = 'none';
+            document.getElementById('finalView').style.display = 'block';
+
+            const appNode = document.getElementById('appNode');
+            const finalMessage = document.getElementById('finalMessage');
+
+            if (window.totalCals > window.dailyGoal) {
+                appNode.classList.add('glow-alert');
+                finalMessage.innerText = "Goal Exceeded. Adjust Tomorrow!";
+                finalMessage.style.color = "var(--alert)";
+            } else {
+                appNode.classList.add('glow-success');
+                finalMessage.innerText = "Target Achieved. Great Job!";
+                finalMessage.style.color = "var(--success)";
+            }
+        };
+    </script>
+</body>
+</html>
